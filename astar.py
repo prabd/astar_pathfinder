@@ -1,4 +1,3 @@
-import numpy as np
 import math
 
 # This class stores info about a location on the grid
@@ -52,7 +51,7 @@ def m_distance(first, second):
     return abs(first[0] - second[0]) + abs(first[1] - second[1])
 
 # grid is 2-d array of 0s and 1s, where 0s are accessible locations.
-# start and end are np arrays of x y coordinates
+# start and end are lists of x y coordinates
 # Returns path in array form
 def find_path(grid, start, end):
 
@@ -68,7 +67,7 @@ def find_path(grid, start, end):
     open.append(s)
 
     # Holds all the directions that we can look in
-    directions = np.array([[0, 1], [1, 0], [1, 1], [0, -1], [-1, 0], [-1, -1], [-1, 1], [1, -1]])
+    directions = [[0, 1], [1, 0], [1, 1], [0, -1], [-1, 0], [-1, -1], [-1, 1], [1, -1]]
 
     # While open list is not empty
     while len(open) != 0:
@@ -76,10 +75,11 @@ def find_path(grid, start, end):
         index = find_lowest_f(open)
         node = open.pop(index)
         closed.append(node)
+        grid[node.location[0]][node.location[1]] = 2
 
         # Find successors
         for dir in directions:
-            loc = node.location + dir
+            loc = [node.location[0] + dir[0], node.location[1] + dir[1]]
             if not is_accessible(loc[0],loc[1], grid): 
                 continue
 
@@ -101,9 +101,9 @@ def find_path(grid, start, end):
             s.h = m_distance(loc, end)
             s.f = s.g + s.h
 
-            # if node with same location is in open or closed with lower f,
+            # if node with same location is in open with lower f,
             # then skip
-            if lower_f(open, s) or lower_f(closed, s):
+            if lower_f(open, s):
                 continue
             
             # Else, Add node to open list
@@ -113,17 +113,14 @@ def find_path(grid, start, end):
 
 
 def main():
-    msg = "hello"
-    print(msg)
-    
     g = [[0, 1, 0, 0, 0],
         [0, 1, 0, 1, 0],
-        [0, 1, 1, 1, 0],
+        [0, 1, 0, 1, 0],
         [0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0],]
+        [0, 1, 0, 0, 0]]
     
-    start = np.array([0,0])
-    end = np.array([0, 2])
+    start = [0,0]
+    end = [0, 2]
     path = find_path(g, start, end)
     print(path)
 
