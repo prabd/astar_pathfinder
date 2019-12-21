@@ -63,7 +63,6 @@ def find_path(grid, start, end):
     
     # Possibly use priority queue? However priority may change, so using list
     open = []
-    closed = []
     open.append(s)
 
     # Holds all the directions that we can look in
@@ -74,7 +73,6 @@ def find_path(grid, start, end):
         # Find node with min f, pop from q, push to closed
         index = find_lowest_f(open)
         node = open.pop(index)
-        closed.append(node)
         grid[node.location[0]][node.location[1]] = 2
 
         # Find successors
