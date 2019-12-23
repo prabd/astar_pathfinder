@@ -11,9 +11,14 @@ YELLOW = (255, 255, 0) # start/end
 # This sets the WIDTH and HEIGHT of each grid location
 WIDTH = 15
 HEIGHT = 15
- 
+
 # This sets the margin between each cell
 MARGIN = 1
+
+# Sets number of rows and columns
+ROWS = 50
+COLS = 50
+
 
 # This class stores info about a location on the grid
 class Node():
@@ -30,6 +35,7 @@ class Node():
     def __eq__(self, other):
         return self.location[0] == other.location[0] and self.location[1] == other.location[1]
 
+
 # Helper
 # Returns whether a location is valid
 def is_accessible(row, col, grid):
@@ -38,6 +44,7 @@ def is_accessible(row, col, grid):
     if grid[row][col] == 1 or grid[row][col] == 2:
         return False
     return True
+
 
 # Helper
 # Returns index in list with lowest f
@@ -50,6 +57,7 @@ def find_lowest_f(node_list):
             min_ind = i
     return min_ind
 
+
 # Helper
 # Returns true if there exists lower f for same location as node
 def lower_f(node_list, node):
@@ -59,15 +67,17 @@ def lower_f(node_list, node):
                 return True
     return False
 
+
 # Helper
 # Returns Manhattan distance between two location arrays
 def m_distance(first, second):
     return abs(first[0] - second[0]) + abs(first[1] - second[1])
 
+
 # grid is 2-d array of 0s and 1s, where 0s are accessible locations.
 # start and end are lists of x y coordinates
 # Returns path in array form
-def find_path(grid, start, end, screen, illustrating):
+def find_path(grid, start, end, screen, illustrating, directions):
 
     # Initialize starting node
     s = Node(None, start)
@@ -79,11 +89,7 @@ def find_path(grid, start, end, screen, illustrating):
     open_nodes = []
     open_nodes.append(s)
     closed_nodes = []
-
-    # Holds all the directions that we can look in
-    # Can change so that diagonal movement is prohibited
-    directions = [[0, 1], [1, 0], [1, 1], [0, -1], [-1, 0], [-1, -1], [-1, 1], [1, -1]]
-    #directions = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+    
 
     # While open list is not empty
     while len(open_nodes) != 0:
@@ -95,11 +101,7 @@ def find_path(grid, start, end, screen, illustrating):
         grid[node.location[0]][node.location[1]] = 2
         # Draw node as blue (current)
         if illustrating:
-            myRect = pygame.Rect((MARGIN + WIDTH) * node.location[1] + MARGIN,
-                                (MARGIN + HEIGHT) * node.location[0] + MARGIN,
-                                WIDTH,
-                                HEIGHT)
-            pygame.display.update(pygame.draw.rect(screen, BLUE, myRect))
+            draw_tile(node.location[0], node.location[1], BLUE, screen)
         
         # Find successors
         for direc in directions:
@@ -138,15 +140,12 @@ def find_path(grid, start, end, screen, illustrating):
 
             if illustrating:
                 # Draw sucessor as open (red)
-                myRect2 = pygame.Rect((MARGIN + WIDTH) * s.location[1] + MARGIN,
-                                    (MARGIN + HEIGHT) * s.location[0] + MARGIN,
-                                    WIDTH,
-                                    HEIGHT)
-                pygame.display.update(pygame.draw.rect(screen, RED, myRect2))
+                draw_tile(s.location[0], s.location[1], RED, screen)
         # Draw node as closed (green)
         if illustrating:
-            pygame.display.update(pygame.draw.rect(screen, GREEN, myRect))
+            draw_tile(node.location[0], node.location[1], GREEN, screen)
     return []
+
 
 # Initializes screen as grid with white tiles
 def initialize_display(grid, screen):
@@ -164,6 +163,16 @@ def initialize_display(grid, screen):
                               WIDTH,
                               HEIGHT])
     pygame.display.flip()
+
+
+# Draws tile and updates display
+def draw_tile(row, column, color, screen):
+    myRect = pygame.Rect((MARGIN + WIDTH) * column + MARGIN,
+                         (MARGIN + HEIGHT) * row + MARGIN,
+                         WIDTH,
+                         HEIGHT)
+    pygame.display.update(pygame.draw.rect(screen, color, myRect))
+
 
 # Gets user to place obstacles until enter key is pressed
 # Returns true if user exits here, false otherwise
@@ -195,34 +204,46 @@ def get_obstacles(grid, screen):
                     color = BLACK
                     
                     # Update tile
-                    myRect = pygame.Rect((MARGIN + WIDTH) * column + MARGIN,
-                                        (MARGIN + HEIGHT) * row + MARGIN,
-                                        WIDTH,
-                                        HEIGHT)
-                    pygame.display.update(pygame.draw.rect(screen, color, myRect))
+                    draw_tile(row, column, color, screen)
                 except IndexError:
                     print("Out of bounds click")
                 e = pygame.event.wait()
     
-        # Limit to 60 frames per second
         clock.tick(120)
     return False
+
 
 # Given a list of coordinates, it will draw the path on the screen
 def draw_path(path, screen):
     for xy in path:
         row = xy[0]
         col = xy[1]
-        myRect = pygame.Rect((MARGIN + WIDTH) * col + MARGIN,
-                             (MARGIN + HEIGHT) * row + MARGIN,
-                             WIDTH,
-                             HEIGHT)
-        pygame.display.update(pygame.draw.rect(screen, BLUE, myRect))
+        draw_tile(row, col, BLUE, screen)
+
 
 def main():
-    # Hardcoded rows/cols, maybe allow user to change (within a range)?
-    ROWS = 50
-    COLS = 50
+
+    # Ask user for params
+    row, col = input("Enter start location as row col ([0-49] [0-49]): ").split()
+    start = [int(row), int(col)]
+
+    row, col = input("Enter end location as row col ([0-49] [0-49]): ").split()
+    end = [int(row), int(col)]
+
+    # Allow diag movement?
+    # Stores possible directions, default is diagonal movement enabled.
+    directions = [[0, 1], [1, 0], [1, 1], [0, -1], [-1, 0], [-1, -1], [-1, 1], [1, -1]]
+    diag = input("Allow diagonal movement? (Yes/No): ")
+    if diag.strip() == "No":
+        # REDEFINE DIRECTIONS
+        print("redefined")
+        directions = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+
+    # Show pathfinding?
+    show = input("Show pathfinding? (Yes/No): ")
+    illustrate = False
+    if show == "Yes":
+        illustrate = True
 
     # Initialize g
     g = []
@@ -235,29 +256,15 @@ def main():
     pygame.init()
 
     # Create screen
-    WINDOW_SIZE = [805, 805]
+    WINDOW_SIZE = [801, 801]
     screen = pygame.display.set_mode(WINDOW_SIZE)
     
     # Initialize display
     initialize_display(g, screen)
 
-    # Set start/end, and whether to illustrate
-    # TODO: Allow user to change the following
-    illustrate = True # hardcoded as true, allow user to change in future
-    start = [0, 0] # hardcoded
-    end = [49, 49] # hardcoded
-
     # Draw start and end in Yellow
-    startRec = pygame.Rect((MARGIN + WIDTH) * start[1] + MARGIN,
-                           (MARGIN + HEIGHT) * start[0] + MARGIN,
-                           WIDTH,
-                           HEIGHT)
-    endRec = pygame.Rect((MARGIN + WIDTH) * end[1] + MARGIN,
-                         (MARGIN + HEIGHT) * end[0] + MARGIN,
-                         WIDTH,
-                         HEIGHT)
-    pygame.display.update(pygame.draw.rect(screen, YELLOW, startRec))
-    pygame.display.update(pygame.draw.rect(screen, YELLOW, endRec))
+    draw_tile(start[0], start[1], YELLOW, screen)
+    draw_tile(end[0], end[1], YELLOW, screen)
 
     # Get obstacles from user
     user_exit = get_obstacles(g, screen)
@@ -270,15 +277,15 @@ def main():
     g[start[0]][start[1]] = 0
     
     # Run algo
-    print("Beginning search...")
-    path = find_path(g, start, end, screen, illustrate)
+    print("Starting search...")
+    path = find_path(g, start, end, screen, illustrate, directions)
     
     # Show results
     if len(path) == 0:
         print("No path found")
     else:
         print("Found a path")
-        print(path)
+        #print(path)
         draw_path(path, screen)
 
     # Loop to prevent automatic close after algorithm finishes
