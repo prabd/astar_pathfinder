@@ -3,10 +3,11 @@ import pygame
 
 BLACK = (0, 0, 0) # inaccessible
 WHITE = (255, 255, 255) # open
-GREEN = (0, 255, 0) # closed
+GREEN = (0, 255, 0)
 RED = (255, 0, 0) # enqueued
 BLUE = (0, 0, 255) # final path
 YELLOW = (255, 255, 0) # start/end
+GRAY = (170, 170, 170) # closed
 
 # This sets the WIDTH and HEIGHT of each grid location
 WIDTH = 15
@@ -141,9 +142,9 @@ def find_path(grid, start, end, screen, illustrating, directions):
             if illustrating:
                 # Draw sucessor as open (red)
                 draw_tile(s.location[0], s.location[1], RED, screen)
-        # Draw node as closed (green)
+        # Draw node as closed (gray)
         if illustrating:
-            draw_tile(node.location[0], node.location[1], GREEN, screen)
+            draw_tile(node.location[0], node.location[1], GRAY, screen)
     return []
 
 
@@ -266,6 +267,7 @@ def main():
     draw_tile(start[0], start[1], YELLOW, screen)
     draw_tile(end[0], end[1], YELLOW, screen)
 
+    print("Click on squares or hold click to place obstacles.\nPress enter to begin pathfinding.")
     # Get obstacles from user
     user_exit = get_obstacles(g, screen)
     if user_exit:
